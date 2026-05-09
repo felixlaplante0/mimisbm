@@ -56,7 +56,7 @@ print(f"Final ELBO: {model.elbo_:.2f}")
 ## 📖 Learn More
 
 For tutorials and detailed API reference, visit the official site:  
-👉 [mimisbm's documentation](https://github.com/mimisbm/mimisbm)
+👉 [mimisbm's documentation](https://felixlaplante0.github.io/mimisbm)
 
 ### 📚 Citation
 
