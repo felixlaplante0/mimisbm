@@ -53,14 +53,6 @@ Example:
     print(f"Layer components: {layer_labels}")
     print(f"Final ELBO: {model.elbo_:.2f}")
 
-API Reference
--------------
-
-.. autoclass:: mimisbm.MimiSBM
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Citation
 --------
 
@@ -76,3 +68,11 @@ If you use MimiSBM in your research, please cite the original authors' paper:
     }
 
 For more details, see the corresponding Preprint: https://arxiv.org/abs/2401.04682
+
+API Reference
+-------------
+
+.. autoclass:: mimisbm.MimiSBM
+   :members:
+   :undoc-members:
+   :show-inheritance:
