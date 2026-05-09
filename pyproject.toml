@@ -1,11 +1,11 @@
 [project]
 name = "mimisbm"
-description = "Multi-view Stochastic Block Model"
+description = "Mixture of Multilayer Integrator Stochastic Block Model"
 readme = "README.md"
 urls = { "Source" = "https://github.com/felixlaplante0/mimisbm" }
 authors = [{ name = "Félix Laplante" }]
 requires-python = ">=3.10"
-dependencies = ["numpy", "scipy", "scikit-learn"]
+dependencies = ["numpy", "scipy", "fastkmeanspp", "scikit-learn"]
 dynamic = ["version"]
 classifiers = [
     "Programming Language :: Python :: 3",
