@@ -31,17 +31,17 @@ from mimisbm import MimiSBM
 # Generate a synthetic multilayer adjacency tensor (20 nodes, 5 layers)
 np.random.seed(42)
 N, V = 20, 5
-X = np.random.randint(0, 2, size=(N, N, V))
+A = np.random.randint(0, 2, size=(N, N, V))
 
 # Ensure the adjacency matrices are symmetric (undirected)
 for v in range(V):
-    X[..., v] = np.tril(X[..., v], -1) + np.tril(X[..., v], -1).T
+    A[..., v] = np.tril(A[..., v], -1) + np.tril(A[..., v], -1).T
 
 # Initialize the model with 3 node clusters and 2 layer components
 model = MimiSBM(n_clusters=3, n_components=2, random_state=42)
 
 # Fit the model to the multilayer network
-model.fit(X)
+model.fit(A)
 
 # Predict node cluster and layer component assignments
 node_labels, layer_labels = model.predict()
