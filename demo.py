@@ -29,8 +29,7 @@ print("Generating synthetic data...")
 A, true_z, true_w = gen_data()
 
 print("Fitting MimiSBM...")
-model = MimiSBM(n_clusters=2, n_subclusters=2, random_state=42).fit(A)
-pred_z, pred_w = model.predict()
+pred_z, pred_w = MimiSBM(n_clusters=2, n_components=2, random_state=42).fit_predict(A)
 
 # 3. Evaluate
 node_ari = adjusted_rand_score(true_z, pred_z)
