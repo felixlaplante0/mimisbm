@@ -357,7 +357,7 @@ class MimiSBM(ClusterMixin, BaseEstimator):
             axis=1,
         )
 
-    def _validate(self, X: np.typing.ArrayLike) -> tuple[np.ndarray, np.ndarray]:
+    def _validate_X(self, X: np.typing.ArrayLike) -> tuple[np.ndarray, np.ndarray]:
         r"""Validates the input data and ensures it is in the correct format.
 
         Checks that the input is a 3D numpy array with appropriate dimension for a
@@ -380,7 +380,7 @@ class MimiSBM(ClusterMixin, BaseEstimator):
         X |= X.swapaxes(0, 1)
         rows, cols = np.diag_indices(X.shape[0])
         X[rows, cols, :] = 0
-        X_non = 1 - X
+        X_non = ~X
         X_non[rows, cols, :] = 0
 
         return X, X_non
