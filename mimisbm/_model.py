@@ -91,15 +91,15 @@ class MimiSBM(ClusterMixin, BaseEstimator):
 
     @validate_params(  # type: ignore
         {
-            "n_clusters": [Interval(Integral, 1, None, closed="left")],  # type: ignore
-            "n_components": [Interval(Integral, 1, None, closed="left")],  # type: ignore
-            "clusters_prio": [StrOptions({"jeffreys", "uniform"}), np.ndarray],  # type: ignore
-            "components_prio": [StrOptions({"jeffreys", "uniform"}), np.ndarray],  # type: ignore
-            "adjacency_prio": [StrOptions({"jeffreys", "uniform"}), np.ndarray],  # type: ignore
-            "max_ite": [Interval(Integral, 1, None, closed="left")],  # type: ignore
-            "tol": [Interval(Real, 0, None, closed="left")],  # type: ignore
+            "n_clusters": [Interval(Integral, 1, None, closed="left")],
+            "n_components": [Interval(Integral, 1, None, closed="left")],
+            "clusters_prio": [StrOptions({"jeffreys", "uniform"}), np.ndarray],
+            "components_prio": [StrOptions({"jeffreys", "uniform"}), np.ndarray],
+            "adjacency_prio": [StrOptions({"jeffreys", "uniform"}), np.ndarray],
+            "max_ite": [Interval(Integral, 1, None, closed="left")],
+            "tol": [Interval(Real, 0, None, closed="left")]
         },
-        prefer_skip_nested_validation=True,  # type: ignore
+        prefer_skip_nested_validation=True,
     )
     def __init__(
         self,
@@ -444,7 +444,7 @@ class MimiSBM(ClusterMixin, BaseEstimator):
             axis=1
         ), self.component_responsibilities_.argmax(axis=1)
 
-    @validate_params({"A": ["array-like"]}, prefer_skip_nested_validation=True)  # type: ignore
+    @validate_params({"A": ["array-like"]}, prefer_skip_nested_validation=True)
     def fit_predict(self, A: np.typing.ArrayLike) -> tuple[np.ndarray, np.ndarray]:  # type: ignore
         """Fits the MimiSBM model to the multilayer adjacency tensor and predicts.
 
