@@ -4,7 +4,7 @@ description = "Mixture of Multilayer Integrator Stochastic Block Model"
 readme = "README.md"
 urls = { "Source" = "https://github.com/felixlaplante0/mimisbm" }
 authors = [{ name = "Félix Laplante" }]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = ["numpy", "scipy", "fastkmeanspp", "scikit-learn"]
 dynamic = ["version"]
 classifiers = [
