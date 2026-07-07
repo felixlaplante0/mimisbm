@@ -17,7 +17,7 @@
 ## 🚀 Installation
 
 ```bash
-pip install mimisbm
+python -m pip install mimisbm
 ```
 
 ## 🔧 Usage
