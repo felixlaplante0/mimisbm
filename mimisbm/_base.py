@@ -1,5 +1,5 @@
 from numbers import Integral, Real
-from typing import ClassVar, Self, cast
+from typing import ClassVar, Self
 from warnings import warn
 
 import numpy as np
@@ -12,7 +12,7 @@ from sklearn.utils._param_validation import (  # type: ignore
     StrOptions,  # type: ignore
     validate_params,  # type: ignore
 )
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_is_fitted, validate_data
 
 
 class MimiSBM(ClusterMixin, BaseEstimator):
@@ -187,13 +187,8 @@ class MimiSBM(ClusterMixin, BaseEstimator):
 
         return prior
 
-    def _validate_parameters(self):
-        """Validates constructor parameters before fitting.
-
-        Raises:
-            ValueError: If any configuration parameter is invalid.
-        """
-        self._validate_params()
+    def _init_(self):
+        """Validates constructor parameters before fitting."""
         self.clusters_prior_ = self._init_prior(
             self.clusters_prior,
             int(self.n_clusters),
@@ -407,7 +402,7 @@ class MimiSBM(ClusterMixin, BaseEstimator):
             tuple[np.ndarray, np.ndarray]: A tuple containing the validated adjacency
                 tensor and its complement.
         """
-        A = cast(np.ndarray, self._validate_data(A, allow_nd=True, dtype=np.bool))
+        A = np.asarray(validate_data(self, A, allow_nd=True, dtype=bool))
         if A.ndim != 3:  # noqa: PLR2004
             raise ValueError(f"Input data must be a 3D array, got {A.ndim}D array")
 
@@ -434,7 +429,7 @@ class MimiSBM(ClusterMixin, BaseEstimator):
         Returns:
             Self: The fitted model instance.
         """
-        self._validate_parameters()
+        self._validate_params()
         A, A_non = self._validate_A(A)  # type: ignore
 
         if not (self.warm_start and hasattr(self, "converged_")):
