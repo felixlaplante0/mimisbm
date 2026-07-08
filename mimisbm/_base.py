@@ -187,8 +187,8 @@ class MimiSBM(ClusterMixin, BaseEstimator):
 
         return prior
 
-    def _init_(self):
-        """Validates constructor parameters before fitting."""
+    def _validate_priors(self):
+        """Validates and stores fitted prior parameters."""
         self.clusters_prior_ = self._init_prior(
             self.clusters_prior,
             int(self.n_clusters),
@@ -430,6 +430,7 @@ class MimiSBM(ClusterMixin, BaseEstimator):
             Self: The fitted model instance.
         """
         self._validate_params()
+        self._validate_priors()
         A, A_non = self._validate_A(A)  # type: ignore
 
         if not (self.warm_start and hasattr(self, "converged_")):
