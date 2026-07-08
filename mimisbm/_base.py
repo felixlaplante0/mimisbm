@@ -187,7 +187,7 @@ class MimiSBM(ClusterMixin, BaseEstimator):
 
         return prior
 
-    def _validate_parameters(self) -> None:
+    def _validate_parameters(self):
         """Validates constructor parameters before fitting.
 
         Raises:
