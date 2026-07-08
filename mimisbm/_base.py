@@ -1,16 +1,18 @@
 from numbers import Integral, Real
-from typing import Self, cast
+from typing import ClassVar, Self, cast
+from warnings import warn
 
 import numpy as np
 from fastkmeanspp import KMeans  # type: ignore
 from scipy.special import betaln, digamma, entr, gammaln, softmax  # type: ignore
 from sklearn.base import BaseEstimator, ClusterMixin  # type: ignore
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils._param_validation import (  # type: ignore
     Interval,  # type: ignore
     StrOptions,  # type: ignore
     validate_params,  # type: ignore
 )
-from sklearn.utils.validation import check_is_fitted, validate_data  # type: ignore
+from sklearn.utils.validation import check_is_fitted
 
 
 class MimiSBM(ClusterMixin, BaseEstimator):
@@ -43,14 +45,17 @@ class MimiSBM(ClusterMixin, BaseEstimator):
     Attributes:
         n_clusters (int): Number of node clusters.
         n_components (int): Number of layer components.
-        clusters_prior (np.ndarray): Prior parameters for node clusters.
-        components_prior (np.ndarray): Prior parameters for layer components.
-        adjacency_prior (np.ndarray): Prior parameters for edge connections.
+        clusters_prior (np.ndarray | str): Prior configuration for node clusters.
+        components_prior (np.ndarray | str): Prior configuration for layer components.
+        adjacency_prior (np.ndarray | str): Prior configuration for edge connections.
         max_iter (int): Maximum number of iterations for the EM algorithm.
         tol (float): Tolerance to declare convergence based on the ELBO.
         warm_start (bool): Whether to reuse the solution of the previous call
             to fit as initialization.
         random_state (int | None): Random state for initialization.
+        clusters_prior_ (np.ndarray): Prior parameters for node clusters.
+        components_prior_ (np.ndarray): Prior parameters for layer components.
+        adjacency_prior_ (np.ndarray): Prior parameters for edge connections.
         cluster_responsibilities_ (np.ndarray): Posterior probabilities of node cluster
             assignments (N, K).
         component_responsibilities_ (np.ndarray): Posterior probabilities of layer
@@ -74,13 +79,16 @@ class MimiSBM(ClusterMixin, BaseEstimator):
 
     n_clusters: int
     n_components: int
-    clusters_prior: np.ndarray
-    components_prior: np.ndarray
-    adjacency_prior: np.ndarray
+    clusters_prior: np.ndarray | str
+    components_prior: np.ndarray | str
+    adjacency_prior: np.ndarray | str
     max_iter: int
     tol: float
     warm_start: bool
     random_state: int | None
+    clusters_prior_: np.ndarray
+    components_prior_: np.ndarray
+    adjacency_prior_: np.ndarray
     cluster_responsibilities_: np.ndarray
     component_responsibilities_: np.ndarray
     cluster_posterior_: np.ndarray
@@ -89,18 +97,18 @@ class MimiSBM(ClusterMixin, BaseEstimator):
     elbo_: float
     converged_: bool
 
-    @validate_params(  # type: ignore
-        {
-            "n_clusters": [Interval(Integral, 1, None, closed="left")],
-            "n_components": [Interval(Integral, 1, None, closed="left")],
-            "clusters_prio": [StrOptions({"jeffreys", "uniform"}), np.ndarray],
-            "components_prio": [StrOptions({"jeffreys", "uniform"}), np.ndarray],
-            "adjacency_prio": [StrOptions({"jeffreys", "uniform"}), np.ndarray],
-            "max_ite": [Interval(Integral, 1, None, closed="left")],
-            "tol": [Interval(Real, 0, None, closed="left")]
-        },
-        prefer_skip_nested_validation=True,
-    )
+    _parameter_constraints: ClassVar[dict] = {
+        "n_clusters": [Interval(Integral, 1, None, closed="left")],
+        "n_components": [Interval(Integral, 1, None, closed="left")],
+        "clusters_prior": [StrOptions({"jeffreys", "uniform"}), "array-like"],
+        "components_prior": [StrOptions({"jeffreys", "uniform"}), "array-like"],
+        "adjacency_prior": [StrOptions({"jeffreys", "uniform"}), "array-like"],
+        "max_iter": [Interval(Integral, 1, None, closed="left")],
+        "tol": [Interval(Real, 0, None, closed="left")],
+        "warm_start": ["boolean"],
+        "random_state": ["random_state"],
+    }
+
     def __init__(
         self,
         n_clusters: int = 2,
@@ -141,37 +149,66 @@ class MimiSBM(ClusterMixin, BaseEstimator):
         """
         self.n_clusters = n_clusters
         self.n_components = n_components
-        self.clusters_prior = self._init_prior(clusters_prior, n_clusters)
-        self.components_prior = self._init_prior(components_prior, self.n_components)
-        self.adjacency_prior = self._init_prior(adjacency_prior, 2)
+        self.clusters_prior = clusters_prior
+        self.components_prior = components_prior
+        self.adjacency_prior = adjacency_prior
         self.max_iter = max_iter
         self.tol = tol
         self.warm_start = warm_start
         self.random_state = random_state
 
     @staticmethod
-    def _init_prior(prior: np.ndarray | str, d: int) -> np.ndarray:
+    def _init_prior(prior: np.ndarray | str, d: int, name: str) -> np.ndarray:
         """Initializes the prior parameters for a given dimension.
 
         Args:
             prior (np.ndarray | str): The prior specification.
             d (int): The dimension of the prior vector.
+            name (str): Configuration parameter name.
 
         Returns:
             np.ndarray: The initialized prior parameters.
 
         Raises:
-            ValueError: If the provided prior array has an incorrect length.
+            ValueError: If the provided prior has an invalid value or shape.
         """
-        if prior == "jeffreys":
-            return np.full((d,), 0.5)
-        if prior == "uniform":
-            return np.full((d,), 1.0)
+        if isinstance(prior, str):
+            if prior == "jeffreys":
+                return np.full((d,), 0.5)
+            if prior == "uniform":
+                return np.full((d,), 1.0)
+            raise ValueError(f"{name} must be 'jeffreys', 'uniform', or an array.")
 
-        prior = cast(np.ndarray, prior).reshape(-1)
-        if len(prior) != d:
-            raise ValueError(f"Prior must have {d} elements, got {len(prior)}")
+        prior = np.asarray(prior, dtype=float).reshape(-1)
+        if prior.size != d:
+            raise ValueError(f"{name} must have {d} elements, got {prior.size}.")
+        if np.any(prior <= 0):
+            raise ValueError(f"{name} must contain positive entries.")
+
         return prior
+
+    def _validate_parameters(self) -> None:
+        """Validates constructor parameters before fitting.
+
+        Raises:
+            ValueError: If any configuration parameter is invalid.
+        """
+        self._validate_params()
+        self.clusters_prior_ = self._init_prior(
+            self.clusters_prior,
+            int(self.n_clusters),
+            "clusters_prior",
+        )
+        self.components_prior_ = self._init_prior(
+            self.components_prior,
+            int(self.n_components),
+            "components_prior",
+        )
+        self.adjacency_prior_ = self._init_prior(
+            self.adjacency_prior,
+            2,
+            "adjacency_prior",
+        )
 
     def _init_responsibilities(
         self, A: np.ndarray, n_clusters: int, axis: tuple[int, ...]
@@ -212,21 +249,21 @@ class MimiSBM(ClusterMixin, BaseEstimator):
         cluster_evidence = (
             gammaln(self.cluster_posterior_).sum()
             - gammaln(self.cluster_posterior_.sum())
-            - gammaln(self.clusters_prior).sum()
-            + gammaln(self.clusters_prior.sum())
+            - gammaln(self.clusters_prior_).sum()
+            + gammaln(self.clusters_prior_.sum())
         )
 
         component_evidence = (
             gammaln(self.component_posterior_).sum()
             - gammaln(self.component_posterior_.sum())
-            - gammaln(self.components_prior).sum()
-            + gammaln(self.components_prior.sum())
+            - gammaln(self.components_prior_).sum()
+            + gammaln(self.components_prior_.sum())
         )
 
         log_adjacency_posterior = betaln(
             self.adjacency_posterior_[0], self.adjacency_posterior_[1]
         )
-        log_adjacency_prior = betaln(self.adjacency_prior[0], self.adjacency_prior[1])
+        log_adjacency_prior = betaln(self.adjacency_prior_[0], self.adjacency_prior_[1])
 
         # Sum over i < j
         rows, cols = np.tril_indices(self.n_clusters)
@@ -250,10 +287,10 @@ class MimiSBM(ClusterMixin, BaseEstimator):
             A_non (np.ndarray): The complement of the adjacency tensor.
         """
         self.cluster_posterior_ = (
-            self.clusters_prior + self.cluster_responsibilities_.sum(axis=0)
+            self.clusters_prior_ + self.cluster_responsibilities_.sum(axis=0)
         )
         self.component_posterior_ = (
-            self.components_prior + self.component_responsibilities_.sum(axis=0)
+            self.components_prior_ + self.component_responsibilities_.sum(axis=0)
         )
 
         weighted_edges = A @ self.component_responsibilities_
@@ -277,8 +314,8 @@ class MimiSBM(ClusterMixin, BaseEstimator):
 
         self.adjacency_posterior_ = np.stack(
             [
-                expected_edges + self.adjacency_prior[0],
-                expected_non_edges + self.adjacency_prior[1],
+                expected_edges + self.adjacency_prior_[0],
+                expected_non_edges + self.adjacency_prior_[1],
             ]
         )
 
@@ -370,7 +407,7 @@ class MimiSBM(ClusterMixin, BaseEstimator):
             tuple[np.ndarray, np.ndarray]: A tuple containing the validated adjacency
                 tensor and its complement.
         """
-        A = np.asarray(validate_data(self, A, allow_nd=True, dtype=np.bool))  # type: ignore
+        A = cast(np.ndarray, self._validate_data(A, allow_nd=True, dtype=np.bool))
         if A.ndim != 3:  # noqa: PLR2004
             raise ValueError(f"Input data must be a 3D array, got {A.ndim}D array")
 
@@ -397,6 +434,7 @@ class MimiSBM(ClusterMixin, BaseEstimator):
         Returns:
             Self: The fitted model instance.
         """
+        self._validate_parameters()
         A, A_non = self._validate_A(A)  # type: ignore
 
         if not (self.warm_start and hasattr(self, "converged_")):
@@ -423,6 +461,11 @@ class MimiSBM(ClusterMixin, BaseEstimator):
             old_elbo = self.elbo_
 
         self.converged_ = False
+        warn(
+            "MimiSBM did not converge. Increase max_iter or check the initialization.",
+            ConvergenceWarning,
+            stacklevel=2,
+        )
 
         return self
 

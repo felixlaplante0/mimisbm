@@ -1,5 +1,7 @@
 # 🕸️ MimiSBM
 
+[![codecov](https://codecov.io/gh/felixlaplante0/mimisbm/graph/badge.svg)](https://codecov.io/gh/felixlaplante0/mimisbm)
+
 **mimisbm** is a Python package implementing the **Mixture of Multilayer Integrator Stochastic Block Model** proposed by the original authors. It jointly groups nodes into clusters and layers into components, providing a unified framework for identifying shared connectivity patterns across multiple network layers.
 
 ---

@@ -19,7 +19,7 @@ You can install the package via pip:
 
 .. code-block:: bash
 
-   pip install mimisbm
+   python -m pip install mimisbm
 
 Usage
 -----

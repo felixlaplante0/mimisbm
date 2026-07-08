@@ -1,5 +1,5 @@
 """Mixture of Multilayer Integrator Stochastic Block Model."""
 
-from ._model import MimiSBM
+from ._base import MimiSBM
 
 __all__ = ["MimiSBM"]
