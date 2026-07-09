@@ -26,20 +26,20 @@ class MimiSBM(ClusterMixin, BaseEstimator):
     perform inference and estimation of the posterior distributions.
 
     Model settings:
-        - `n_clusters`: Number of clusters for the nodes.
-        - `n_components`: Number of mixture components for the layers.
+        - ``n_clusters``: Number of clusters for the nodes.
+        - ``n_components``: Number of mixture components for the layers.
 
     Prior settings:
-        - `clusters_prior`: Dirichlet prior for the node cluster mixing proportions.
-        - `components_prior`: Dirichlet prior for the layer component mixing
+        - ``clusters_prior``: Dirichlet prior for the node cluster mixing proportions.
+        - ``components_prior``: Dirichlet prior for the layer component mixing
           proportions.
-        - `adjacency_prior`: Beta prior for the edge probabilities within and
+        - ``adjacency_prior``: Beta prior for the edge probabilities within and
           between clusters for each component.
 
     EM settings:
-        - `max_iter`: Maximum number of iterations for the VEM algorithm.
-        - `tol`: Convergence tolerance based on the Evidence Lower Bound (ELBO).
-        - `warm_start`: If True, reuse the responsibilities from the previous fit
+        - ``max_iter``: Maximum number of iterations for the VEM algorithm.
+        - ``tol``: Convergence tolerance based on the Evidence Lower Bound (ELBO).
+        - ``warm_start``: If True, reuse the responsibilities from the previous fit
           as initialization.
 
     Attributes:

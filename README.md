@@ -12,7 +12,7 @@
 - **Variational EM**: Efficient inference using a Variational Expectation-Maximization (VEM) algorithm for large-scale networks.
 - **Bayesian Framework**: Supports flexible Dirichlet and Beta priors, allowing for robust structure discovery under different sparsity regimes.
 - **Component-wise SBMs**: Groups layers sharing similar block-model structures into distinct mixture components.
-- **scikit-learn API**: Native `BaseEstimator` and `ClusterMixin` integration with a familiar `fit` / `predict` interface.
+- **scikit-learn API**: Native ``BaseEstimator`` and ``ClusterMixin`` integration with a familiar ``fit`` / ``predict`` interface.
 
 ---
 
