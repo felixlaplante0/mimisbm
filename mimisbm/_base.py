@@ -50,8 +50,8 @@ class MimiSBM(ClusterMixin, BaseEstimator):
         adjacency_prior (np.ndarray | str): Prior configuration for edge connections.
         max_iter (int): Maximum number of iterations for the EM algorithm.
         tol (float): Tolerance to declare convergence based on the ELBO.
-        warm_start (bool): Whether to reuse the solution of the previous call
-            to fit as initialization.
+        warm_start (bool): Whether to reuse the solution of the previous call to fit as
+            initialization.
         random_state (int | None): Random state for initialization.
         clusters_prior_ (np.ndarray): Prior parameters for node clusters.
         components_prior_ (np.ndarray): Prior parameters for layer components.
@@ -124,13 +124,12 @@ class MimiSBM(ClusterMixin, BaseEstimator):
     ):
         """Initializes the MimiSBM model with specified design and priors.
 
-        Constructs a mixture of multilayer SBMs with user-defined priors and
-        EM settings. Provides default settings for Bayesian inference and
-        convergence criteria.
+        Constructs a mixture of multilayer SBMs with user-defined priors and EM
+        settings. Provides default settings for Bayesian inference and convergence
+        criteria.
 
         Args:
-            n_clusters (int, optional): Number of clusters for the nodes.
-                Defaults to 2.
+            n_clusters (int, optional): Number of clusters for the nodes. Defaults to 2.
             n_components (int, optional): Number of mixture components for the layers.
                 Defaults to 2.
             clusters_prior (np.ndarray | str, optional): Dirichlet prior for node
